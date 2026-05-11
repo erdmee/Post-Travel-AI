@@ -1,6 +1,6 @@
 # Post-Travel-AI
 
-여행 앱의 AI 서버. NestJS 백엔드의 GPU 서버 역할로, 사진 분류와 여행 블로그 자동 생성을 담당.
+여행후유증 앱의 AI 서버. NestJS 백엔드의 GPU 서버 역할로, 사진 분류와 여행 블로그 자동 생성을 담당.
 
 ## 기능
 
@@ -63,7 +63,7 @@ Post-Travel-AI/
 ### 사전 요구
 
 - Python 3.11 이상 (3.13 권장)
-- `GEMINI_API_KEY` (팀 내부 채널로 받음, 깃에 포함되지 않음)
+- `GEMINI_API_KEY`
 
 ### 셋업
 
@@ -90,7 +90,7 @@ cp .env.example .env
 | 이름 | 필수 | 기본값 | 비고 |
 |---|---|---|---|
 | `GEMINI_API_KEY` | yes | - | https://aistudio.google.com/apikey 에서 발급 |
-| `LLM_MODEL` | no | `gemini-2.0-flash` | `gemini-2.5-flash`, `gemini-2.5-pro` 등 |
+| `LLM_MODEL` | no | `gemini-2.5-flash` | `gemini-2.5-flash`, `gemini-2.5-pro` 등 |
 | `GPU_INTERNAL_TOKEN` | no | `dev-internal-token` | NestJS와 같은 값으로 공유 |
 
 ## 백엔드와의 연동
