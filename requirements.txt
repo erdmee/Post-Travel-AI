@@ -1,0 +1,9 @@
+torch
+open-clip-torch
+pillow
+pillow-heif
+google-genai
+python-dotenv
+fastapi
+uvicorn[standard]
+httpx
