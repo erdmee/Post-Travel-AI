@@ -70,7 +70,7 @@ def _get_client() -> tuple[genai.Client, str]:
         raise RuntimeError(
             "GEMINI_API_KEY is not set. Add it to .env (see .env.example)"
         )
-    model = os.getenv("LLM_MODEL", "gemini-2.5-flash")
+    model = os.getenv("LLM_MODEL", "gemini-3-flash-preview")
     client = genai.Client(
         api_key=api_key,
         http_options=types.HttpOptions(timeout=_LLM_CALL_TIMEOUT_MS),
