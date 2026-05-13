@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import io
+import logging
 from typing import Any, TypedDict
 
 from google.genai import types
-from PIL import Image
+from PIL import Image, ImageOps, UnidentifiedImageError
 
 from .types import PhotoInput
+
+logger = logging.getLogger(__name__)
+
+Image.MAX_IMAGE_PIXELS = 50_000_000
 
 
 class Persona(TypedDict):
@@ -71,7 +76,9 @@ def get_persona(name: str) -> Persona:
 
 
 def _to_jpeg_for_llm(image_bytes: bytes, max_size: int = _LLM_IMAGE_MAX) -> bytes:
-    img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+    img = Image.open(io.BytesIO(image_bytes))
+    img = ImageOps.exif_transpose(img)
+    img = img.convert("RGB")
     if max(img.size) > max_size:
         img.thumbnail((max_size, max_size))
     buf = io.BytesIO()
@@ -93,9 +100,25 @@ def _format_photo_meta(i: int, photo: PhotoInput) -> str:
 
 def build_contents(
     photos: list[PhotoInput], persona: str = DEFAULT_PERSONA
-) -> list[Any]:
+) -> tuple[list[Any], list[PhotoInput]]:
+    """Return (contents, valid_photos). Photos that fail to decode are skipped."""
     persona_data = get_persona(persona)
-    instructions = f"""아래는 시간순으로 정렬된 {len(photos)}장의 여행 사진과 메타데이터입니다.
+
+    valid_photos: list[PhotoInput] = []
+    parts: list[Any] = []
+    for photo in photos:
+        try:
+            jpeg_bytes = _to_jpeg_for_llm(photo["image_bytes"])
+        except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError) as e:
+            logger.warning(
+                "Skipping unreadable photo %s: %s", photo.get("photo_id"), e
+            )
+            continue
+        parts.append(_format_photo_meta(len(valid_photos), photo))
+        parts.append(types.Part.from_bytes(data=jpeg_bytes, mime_type="image/jpeg"))
+        valid_photos.append(photo)
+
+    instructions = f"""아래는 시간순으로 정렬된 {len(valid_photos)}장의 여행 사진과 메타데이터입니다.
 
 [구조 규칙]
 - 각 섹션은 1~4장의 사진과 그 아래 짧은 텍스트로 구성됩니다.
@@ -115,11 +138,5 @@ def build_contents(
   ]
 }}
 """
-    contents: list[Any] = [instructions]
-    for i, photo in enumerate(photos):
-        contents.append(_format_photo_meta(i, photo))
-        jpeg_bytes = _to_jpeg_for_llm(photo["image_bytes"])
-        contents.append(
-            types.Part.from_bytes(data=jpeg_bytes, mime_type="image/jpeg")
-        )
-    return contents
+    contents: list[Any] = [instructions, *parts]
+    return contents, valid_photos
