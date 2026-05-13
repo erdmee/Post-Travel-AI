@@ -126,7 +126,7 @@ cp .env.example .env
 | 이름 | 필수 | 기본값 | 비고 |
 |---|---|---|---|
 | `GEMINI_API_KEY` | yes | - | https://aistudio.google.com/apikey |
-| `LLM_MODEL` | no | `gemini-2.5-flash` | `gemini-2.5-pro`, `gemini-3-flash-preview` 등 |
+| `LLM_MODEL` | no | `gemini-3-flash-preview` | `gemini-2.5-pro` 등 |
 | `GPU_INTERNAL_TOKEN` | no | `dev-internal-token` | NestJS와 같은 값으로 공유. 인바운드 요청과 콜백 전송 모두에 사용. |
 
 ---
